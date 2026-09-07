@@ -24,6 +24,57 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
+
+	// mtls setup
+	/*
+		caCert, err := os.ReadFile("ca.crt")
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		caPool := x509.NewCertPool()
+
+		if !caPool.AppendCertsFromPEM(caCert) {
+			log.Fatal("CA konnte nicht geladen werden")
+		}
+
+		serverCert, err := tls.LoadX509KeyPair(
+			"server.crt",
+			"server.key",
+		)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		tlsConfig := &tls.Config{
+			ClientAuth: tls.RequireAndVerifyClientCert,
+			ClientCAs:  caPool,
+			Certificates: []tls.Certificate{
+				serverCert,
+			},
+		}
+
+		creds := credentials.NewTLS(tlsConfig)
+
+		s := grpc.NewServer(
+			grpc.Creds(creds),
+		)
+	*/
+	// TLS setup
+	/*
+		creds, err := credentials.NewServerTLSFromFile(
+			"server.crt",
+			"server.key",
+		)
+		if err != nil {
+			log.Fatalf("TLS setup failed: %v", err)
+		}
+		s := grpc.NewServer(
+			grpc.Creds(creds),
+		)
+	*/
+	// Without TLS
+
 	s := grpc.NewServer()
 	pb.RegisterGreeterServer(s, &server{})
 	log.Printf("server listening at %v", lis.Addr())

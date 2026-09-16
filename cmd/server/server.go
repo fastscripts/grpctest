@@ -2,10 +2,15 @@ package main
 
 import (
 	"context"
+	"errors"
 	"log"
 	"net"
+	"os"
+	"os/signal"
 
-	pb "github.com/fastscripts/grpctest"
+	"github.com/fastscripts/grpctest/cmd/server/interceptor"
+	pb "github.com/fastscripts/grpctest/gen/go/proto/hello/v1"
+	"github.com/fastscripts/grpctest/internal/logger"
 
 	"google.golang.org/grpc"
 )
@@ -20,6 +25,10 @@ func (s *server) SayHello(ctx context.Context, in *pb.HelloRequest) (*pb.HelloRe
 }
 
 func main() {
+
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
+	defer stop()
+
 	lis, err := net.Listen("tcp", ":50051")
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
@@ -75,10 +84,24 @@ func main() {
 	*/
 	// Without TLS
 
-	s := grpc.NewServer()
+	logger := logger.NewZerologLogger("info", nil)
+	s := grpc.NewServer(grpc.UnaryInterceptor(interceptor.LoggingInterceptor(logger)))
 	pb.RegisterGreeterServer(s, &server{})
 	log.Printf("server listening at %v", lis.Addr())
-	if err := s.Serve(lis); err != nil {
-		log.Fatalf("failed to serve: %v", err)
-	}
+
+	/*
+		if err := s.Serve(lis); err != nil {
+			log.Fatalf("failed to serve: %v", err)
+		}
+	*/
+	go func() {
+		if err := s.Serve(lis); err != nil && !errors.Is(err, grpc.ErrServerStopped) {
+			stop()
+		}
+	}()
+
+	<-ctx.Done()
+	logger.Info("Shutting down server...")
+	s.GracefulStop()
+
 }

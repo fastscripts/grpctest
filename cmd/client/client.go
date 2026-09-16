@@ -5,7 +5,7 @@ import (
 	"log"
 	"time"
 
-	pb "github.com/fastscripts/grpctest"
+	pb "github.com/fastscripts/grpctest/gen/go/proto/hello/v1"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )

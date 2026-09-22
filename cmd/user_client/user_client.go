@@ -27,13 +27,3 @@ func main() {
 	}
 	log.Printf("User: %v", r)
 }
-
-/*
-	// Call the GetUserByID method
-	userID := int32(1) // Replace with the desired user ID
-	req := &pb.UserIDRequest{UserId: userID}
-	res, err := c.GetUserByID(context.Background(), req)
-	if err != nil {
-		log.Fatalf("could not get user: %v", err)
-	}
-*/
